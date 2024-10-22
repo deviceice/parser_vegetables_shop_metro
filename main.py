@@ -120,47 +120,7 @@ def optimization_width_column(path_doc):
     workbook.save(path_doc)
 
 
-def parse_moscow():
-    id_address_shop_moskov = {
-        '10': 'Ул. Ленинградское шоссе, д. 71Г (м. Речной вокзал)',
-        '11': 'Ул. Пр-т Мира, д. 211, стр. 1 (м. Ростокино)',
-        '12': 'Ул. Дорожная, д. 1, корп. 1 (м. Южная)',
-        '13': 'Ул. Рябиновая, д. 59 (м. Аминьевская)',
-        '14': 'Ул. Дмитровское шоссе, д. 165Б (м. Физтех)',
-        '17': 'Ул. Маршала Прошлякова, д. 14 (м. Строгино)',
-        '18': 'Ул. 104 км МКАД, д. 6 (м. Щелковская)',
-        '19': 'Ул. Шоссейная, д. 2Б (м. Печатники)',
-        '49': 'П. Московский, кв-л 34, д. 3, стр. 1',
-        '308': 'Ул. Складочная, д. 1, стр. 1 (м. Савеловская)',
-        '356': 'Ул. 1-я Дубровская, д. 13А, стр. 1 (м. Дубровка)',
-        '363': 'Ул. Боровское шоссе, д. 10А (м. Боровское шоссе)',
-    }
-    logger.success("Парсим магазины г.Москва")
-    data_moscow = parsing_ovoshchi(id_address_shop_moskov)
-    logger.info(f"Сохраняем в xlsx")
-    path_doc = 'Овощи Москва.xlsx'  # Изменить для сохранения в другую папку и с другим названием
-    save_to_xlsx(data_moscow, path_doc)
-    logger.info(f"Оптимизируем ширину столбцов")
-    optimization_width_column(path_doc)
-
-
-def parse_piter():
-    id_address_shop_piter = {
-        '15': 'Ул. Комендантский пр-т, д. 3, лит. А (м. Комендантский пр-т)',
-        '16': 'Ул. Пр-т Косыгина, д. 4, лит. А (м. Ладожская)',
-        '20': 'Ул. Пулковское шоссе, д. 23, лит. A (м. Звездная)',
-    }
-    logger.success("Парсим магазины г.Санкт-Петербург")
-    data_piter = parsing_ovoshchi(id_address_shop_piter)
-    logger.info(f"Сохраняем в xlsx")
-    path_doc = 'Овощи Санкт-Петербург.xlsx'  # Изменить для сохранения в другую папку и с другим названием
-    save_to_xlsx(data_piter, path_doc)
-    logger.info(f"Оптимизируем ширину столбцов")
-    optimization_width_column(path_doc)
-
-
 def multi_start(shops, city_name):
-    logger.success(f"Парсим магазины {city_name}")
     data_piter = parsing_ovoshchi(shops)
     logger.info(f"Сохраняем в xlsx")
     path_doc = f'Овощи {city_name}.xlsx'  # Изменить для сохранения в другую папку и с другим названием
@@ -170,8 +130,8 @@ def multi_start(shops, city_name):
 
 
 if __name__ == '__main__':
-    # Все магазины в г.Москва
     start_time_job = datetime.now()
+    # Все магазины в г.Москва
     id_address_shop_moskov = {
         '10': 'Ул. Ленинградское шоссе, д. 71Г (м. Речной вокзал)',
         '11': 'Ул. Пр-т Мира, д. 211, стр. 1 (м. Ростокино)',
@@ -192,30 +152,18 @@ if __name__ == '__main__':
         '16': 'Ул. Пр-т Косыгина, д. 4, лит. А (м. Ладожская)',
         '20': 'Ул. Пулковское шоссе, д. 23, лит. A (м. Звездная)',
     }
-    moscow = 'г.Москва'
-    piter = 'г.Санкт-Петербург'
-    # logger.success("Парсим магазины г.Москва")
-    # data_moscow = parsing_ovoshchi(id_address_shop_moskov)
-    # logger.info(f"Сохраняем в xlsx")
-    # path_doc = 'Овощи Москва.xlsx'  # Изменить для сохранения в другую папку и с другим названием
-    # save_to_xlsx(data_moscow, path_doc)
-    # logger.info(f"Оптимизируем ширину столбцов")
-    # optimization_width_column(path_doc)
-    # logger.success("Парсим магазины г.Санкт-Петербург")
-    # data_piter = parsing_ovoshchi(id_address_shop_piter)
-    # logger.info(f"Сохраняем в xlsx")
-    # path_doc = 'Овощи Санкт-Петербург.xlsx'  # Изменить для сохранения в другую папку и с другим названием
-    # save_to_xlsx(data_piter, path_doc)
-    # logger.info(f"Оптимизируем ширину столбцов")
-    # optimization_width_column(path_doc)
-    # parse_moscow()
-    # parse_piter()
-    moscow_process = Process(target=multi_start, args=(id_address_shop_moskov, moscow))
-    moscow_process.start()
-    piter_process = Process(target=multi_start, args=(id_address_shop_piter, piter))
-    piter_process.start()
-    moscow_process.join()
-    piter_process.join()
+    data = [[id_address_shop_moskov, 'г.Москва'], [id_address_shop_piter, 'г.Санкт-Петербург']]
+
+    processes = []
+    for id_address_shop, name in data:
+        logger.success(f"Парсим магазины {name}")
+        process = Process(target=multi_start, args=(id_address_shop, name))
+        process.start()
+        processes.append(process)
+
+    for process in processes:
+        process.join()
+
     logger.success(f"Документы готовы")
     finish_time_job = datetime.now()
     job_time = finish_time_job - start_time_job
